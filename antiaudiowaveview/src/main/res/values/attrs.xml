@@ -6,6 +6,5 @@
         <attr name="pointTotal" format="integer"/>
         <attr name="accuracy" format="integer"></attr>
         <attr name="readCount" format="integer"></attr>
-        <attr name="maxCacheSize" format="integer"></attr>
     </declare-styleable>
 </resources>

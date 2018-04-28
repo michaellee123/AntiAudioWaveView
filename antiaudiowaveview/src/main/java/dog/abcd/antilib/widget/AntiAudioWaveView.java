@@ -10,8 +10,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 /**
  * 实时显示音频时域图
  *
@@ -33,17 +31,11 @@ public class AntiAudioWaveView extends View {
      * 精确度，1为最优，越大，图形越模糊
      */
     int accuracy = 1;
-    /**
-     * 队列最大缓存数量，为了保证数据的实时性，如果每一次绘制的大小过小，绘制速度比UI刷新速度快，
-     * 队列中会堆积过多的bitmap，通过这个值来去掉部分bitmap，当然，显示效果上面来说，会掉帧
-     */
-    int maxCacheSize = 0;
     int widthPixels;
     int heightPixels;
     boolean isStart = false;
     Bitmap bitmapCache;
     DrawThread drawThread;
-    LinkedBlockingQueue<Bitmap> bitmapQueue = new LinkedBlockingQueue<>();
 
     public AntiAudioWaveView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -53,7 +45,6 @@ public class AntiAudioWaveView extends View {
         audioSampleNum = typedArray.getInteger(R.styleable.AntiAudioWaveView_pointTotal, audioSampleNum);
         accuracy = typedArray.getInteger(R.styleable.AntiAudioWaveView_accuracy, accuracy);
         readCount = typedArray.getInteger(R.styleable.AntiAudioWaveView_readCount, readCount);
-        maxCacheSize = typedArray.getInteger(R.styleable.AntiAudioWaveView_maxCacheSize, maxCacheSize);
         areaBuffer = new AreaBuffer(audioSampleNum);
         paint = new Paint();
         paint.setColor(color);
@@ -77,13 +68,6 @@ public class AntiAudioWaveView extends View {
     }
 
     public void startShow() {
-        isStart = true;
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                invalidate();
-            }
-        }, 5);
         if (drawThread == null) {
             drawThread = new DrawThread();
             drawThread.start();
@@ -91,15 +75,16 @@ public class AntiAudioWaveView extends View {
     }
 
     public void stopShow() {
-        isStart = false;
         if (drawThread != null) {
             try {
                 drawThread.interrupt();
             } catch (Exception e) {
-
             } finally {
                 drawThread = null;
             }
+        }
+        if (bitmapCache != null) {
+            bitmapCache.recycle();
         }
     }
 
@@ -109,14 +94,6 @@ public class AntiAudioWaveView extends View {
         public void run() {
             while (!isInterrupted()) {
                 short[] data = areaBuffer.get(readCount);
-                if (data == null) {
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    continue;
-                }
                 drawBitmap(data);
             }
         }
@@ -133,53 +110,33 @@ public class AntiAudioWaveView extends View {
         Canvas canvas = new Canvas(bitmap);
         float moveDistance = (float) audio.length / audioSampleNum * widthPixels;
         //往左边移动audio长度一样的宽度
-        if (this.bitmapCache != null) {
+        if (this.bitmapCache != null && !this.bitmapCache.isRecycled()) {
             canvas.drawBitmap(this.bitmapCache, -moveDistance, 0, paint);
         }
         //把新的线条画到最右边
         float[] pointAdd = new float[audio.length * 4];
-        for (int i = 0; i < audio.length - 1; i++) {
+        for (int i = 0; i < audio.length - 1; i += accuracy) {
             pointAdd[4 * i] = (float) i / audioSampleNum * widthPixels + widthPixels - moveDistance;//本来的比例，再加上左边被移动的距离
             pointAdd[4 * i + 1] = heightPixels / 2 + (float) audio[i] / 32768 * heightPixels / 2;
             pointAdd[4 * i + 2] = (float) (i + 1) / audioSampleNum * widthPixels + widthPixels - moveDistance;
             pointAdd[4 * i + 3] = heightPixels / 2 + (float) audio[i + 1] / 32768 * heightPixels / 2;
         }
         canvas.drawLines(pointAdd, paint);
-        //保存Bitmap帧到队列中
-        bitmapQueue.add(bitmap);
         //保存上一帧的Bitmap用作下一帧的缓存
         this.bitmapCache = bitmap;
         canvas.save();
         canvas.restore();
-    }
-
-    private void drawFromQueue(Canvas canvas) {
-        try {
-            if (bitmapQueue.size() <= 1) {
-                canvas.drawBitmap(bitmapCache, 0, 0, null);
-            } else {
-                Bitmap bitmap = bitmapQueue.take();
-                canvas.drawBitmap(bitmap, 0, 0, null);
-                bitmap.recycle();
+        post(new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
             }
-            //清除中间多余帧以保证实时性，如果画图速度超过UI绘制速度，则会出现跳帧的情况
-            if (bitmapQueue.size() > maxCacheSize && maxCacheSize >= 1) {
-                bitmapQueue.take().recycle();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     protected void onDraw(final Canvas canvas) {
-        if (isStart) {
-            drawFromQueue(canvas);
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    invalidate();
-                }
-            }, 1);
+        if (bitmapCache != null && !bitmapCache.isRecycled()) {
+            canvas.drawBitmap(bitmapCache, 0, 0, null);
         }
     }
 }

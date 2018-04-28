@@ -12,10 +12,9 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         app:accuracy="1"
-        app:maxCacheSize="5"
-        app:pointTotal="16000"
-        app:readCount="600"
+        app:pointTotal="80000"
+        app:readCount="192"
         app:waveColor="@color/colorAccent"
-        app:waveWidth="2px"/>
+        app:waveWidth="1px"/>
 
 </RelativeLayout>
