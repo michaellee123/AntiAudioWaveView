@@ -33,7 +33,6 @@ public class AntiAudioWaveView extends View {
     int accuracy = 1;
     int widthPixels;
     int heightPixels;
-    boolean isStart = false;
     Bitmap bitmapCache;
     DrawThread drawThread;
 
@@ -56,9 +55,6 @@ public class AntiAudioWaveView extends View {
             public void onGlobalLayout() {
                 widthPixels = getWidth();
                 heightPixels = getHeight();
-                if (bitmapCache == null) {
-                    bitmapCache = Bitmap.createBitmap(widthPixels, heightPixels, Bitmap.Config.ARGB_4444);
-                }
             }
         });
     }
