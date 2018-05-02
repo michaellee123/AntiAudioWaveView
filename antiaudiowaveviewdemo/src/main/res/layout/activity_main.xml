@@ -7,14 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <dog.abcd.antilib.widget.AntiAudioWaveView
+    <dog.abcd.antilib.widget.AntiAudioWaveSurfaceView
         android:id="@+id/antiAudioWaveView"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        app:accuracy="1"
-        app:pointTotal="80000"
-        app:readCount="192"
-        app:waveColor="@color/colorAccent"
-        app:waveWidth="1px"/>
+        android:layout_height="120dp"
+        app:animationFrame="36"
+        app:audioTotal="80000"
+        app:autoControl="false"
+        app:sampleRate="16000"
+        app:strokeColor="@color/colorAccent"
+        app:strokeWidth="1px"/>
 
 </RelativeLayout>

@@ -7,4 +7,13 @@
         <attr name="accuracy" format="integer"></attr>
         <attr name="readCount" format="integer"></attr>
     </declare-styleable>
+
+    <declare-styleable name="AntiAudioWaveSurfaceView">
+        <attr name="strokeColor" format="color"/>
+        <attr name="audioTotal" format="integer"/>
+        <attr name="strokeWidth" format="dimension"/>
+        <attr name="animationFrame" format="integer"/>
+        <attr name="sampleRate" format="integer"/>
+        <attr name="autoControl" format="boolean"/>
+    </declare-styleable>
 </resources>

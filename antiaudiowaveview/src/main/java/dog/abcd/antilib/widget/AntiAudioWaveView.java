@@ -16,7 +16,6 @@ import android.view.ViewTreeObserver;
  * @author Michael Lee
  */
 public class AntiAudioWaveView extends View {
-    private static final String TAG = "AntiAudioWaveView";
     AreaBuffer areaBuffer;
     Paint paint;
     /**
@@ -85,7 +84,6 @@ public class AntiAudioWaveView extends View {
     }
 
     class DrawThread extends Thread {
-
         @Override
         public void run() {
             while (!isInterrupted()) {
@@ -96,10 +94,7 @@ public class AntiAudioWaveView extends View {
     }
 
     private void drawBitmap(short audio[]) {
-        if (widthPixels == 0 || heightPixels == 0) {
-            return;
-        }
-        if (audio == null) {
+        if (widthPixels == 0 || heightPixels == 0 || audio == null) {
             return;
         }
         Bitmap bitmap = Bitmap.createBitmap(widthPixels, heightPixels, Bitmap.Config.ARGB_4444);
@@ -122,64 +117,14 @@ public class AntiAudioWaveView extends View {
         this.bitmapCache = bitmap;
         canvas.save();
         canvas.restore();
-        post(new Runnable() {
-            @Override
-            public void run() {
-                invalidate();
-            }
-        });
+        postInvalidate();
     }
 
+    @Override
     protected void onDraw(final Canvas canvas) {
+        super.onDraw(canvas);
         if (bitmapCache != null && !bitmapCache.isRecycled()) {
             canvas.drawBitmap(bitmapCache, 0, 0, null);
         }
     }
 }
-
-
-/**
- * 这下面是最开始，最简单粗暴的方式，在性能好的手机上还能用，性能差的手机上就没法用了，有兴趣的可以研究一下，实测s8+上面宽度32000，绘制一次5毫秒
- */
-//    LinkedList<float[]> pointArray = new LinkedList<>();
-//    float[] points = new float[pointArray.size() * 4];
-//
-//    protected void drawWave(Canvas canvas, short audio[]) {
-//        if (audio == null) {
-//            audio = new short[0];
-//        }
-//        //先计算Y轴
-//        for (int i = 0; i < audio.length - 1; i += accuracy) {
-//            float[] floats = new float[]{
-//                    0f,
-//                    heightPixels / 2 + (float) audio[i] / 32768 * heightPixels / 2,
-//                    0f,
-//                    heightPixels / 2 + (float) audio[i + 1] / 32768 * heightPixels / 2
-//            };
-//            pointArray.add(floats);
-//        }
-//        //从头部去掉超出的部分
-//        int overSize = pointArray.size() - audioSampleNum;
-//        if (overSize > 0) {
-//            for (int i = 0; i < overSize; i++) {
-//                pointArray.removeFirst();
-//            }
-//        }
-//        //遍历拼接成去canvas绘制线条
-//        float[] floats;
-//        int index = 0;
-//        for (Iterator<float[]> iterator = pointArray.iterator(); iterator.hasNext(); ) {
-//            floats = iterator.next();
-//            floats[0] = (float) index / audioSampleNum * widthPixels;
-//            floats[2] = (float) (index + 1) / audioSampleNum * widthPixels;
-//            if (index * 4 >= points.length) {
-//                break;
-//            }
-//            points[4 * index] = floats[0];
-//            points[4 * index + 1] = floats[1];
-//            points[4 * index + 2] = floats[2];
-//            points[4 * index + 3] = floats[3];
-//            index++;
-//        }
-//        canvas.drawLines(points, paint);
-//    }

@@ -107,6 +107,5 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 26 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: __local_aars__:D.\CompanyProjectASFile\AntiAudioWaveView\antiaudiowaveview\libs\tsilk.jar:unspecified@jar" level="project" />
   </component>
 </module>
