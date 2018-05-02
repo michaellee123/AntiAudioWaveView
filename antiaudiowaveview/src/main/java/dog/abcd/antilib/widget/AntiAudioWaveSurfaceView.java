@@ -54,6 +54,7 @@ public class AntiAudioWaveSurfaceView extends SurfaceView
     LinkedBlockingQueue<Long> keysQueue = new LinkedBlockingQueue<>();
     DrawThread drawThread;
     ShowThread showThread;
+    boolean initialized = false;
 
     public AntiAudioWaveSurfaceView(Context context) {
         super(context);
@@ -101,6 +102,7 @@ public class AntiAudioWaveSurfaceView extends SurfaceView
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        initialized = true;
         if (autoControl)
             start();
     }
@@ -112,6 +114,7 @@ public class AntiAudioWaveSurfaceView extends SurfaceView
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        initialized = false;
         if (autoControl)
             stop();
     }
@@ -168,6 +171,9 @@ public class AntiAudioWaveSurfaceView extends SurfaceView
     }
 
     private void draw() {
+        if (!initialized) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         try {
             mCanvas = mHolder.lockCanvas();
@@ -211,6 +217,9 @@ public class AntiAudioWaveSurfaceView extends SurfaceView
     }
 
     private void drawBitmap(short audio[]) {
+        if (!initialized) {
+            return;
+        }
         if (widthPixels == 0 || heightPixels == 0 || audio == null) {
             return;
         }
