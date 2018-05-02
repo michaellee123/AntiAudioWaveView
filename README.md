@@ -31,3 +31,5 @@
 在stopShow()调用之前应该停止putAudioData方法的调用
 ## Demo
 已上传到GITHUB
+# AntiAudioWaveSurfaceView
+使用SurfaceView的实现版本，动画比View版本的会流畅得多，推荐使用这一个，参数都是差不多的，各位可以从代码中查看具体参数。
